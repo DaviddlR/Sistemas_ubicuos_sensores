@@ -63,7 +63,7 @@ export default function App() {
     // { id: 5, title: 'Magnetómetro' },
     // { id: 6, title: 'Podómetro' },
     // { id: 7, title: 'GPS' },
-    { id: 999}
+    
     
   ];
   
@@ -80,23 +80,28 @@ export default function App() {
 
       <TouchableOpacity style={estilarBoton(id, 0)} onPress={() => {
         console.log("----", sensores[id])
+
+        // Si el sensor con este id está desactivado...
         if(sensores[id] == false){
           
+          // Marcamos como activado
           setSensores(previousState => {
             return { ...previousState, [id]:true}
           })
-          console.log('abrimos')
-          suscripcionsetAcelerometro(
-            Accelerometer.addListener(setData),
-            Accelerometer.setUpdateInterval(400)
-          );
+
+          // Activamos el sensor
+          activarDesactivarSensor(id, 1)
+
+        // Si está activado, lo desactivamos
         } else {
+
+          // Marcamos como desactivado
           setSensores(previousState => {
             return { ...previousState, [id]:false}
           })
-          console.log('cerramos')
-          suscripcionacelerometro && suscripcionacelerometro.remove();
-          setSubscription(null);
+          
+          // Desactivamos el sensor
+          activarDesactivarSensor(id, 0)
         }
       }
         
@@ -111,6 +116,19 @@ export default function App() {
     
   );
 
+  // Función para renderizar el item
+  const renderItem = ({ item }) => (
+    <Item id={item.id} title={item.title} />
+  );
+
+  // Separador establecido
+  const separatorItem = () => {
+      return (
+          <View style={styles.separator} />
+      )
+  }
+
+  // Función para estilar el color del botón y el texto según el sensor esté activo o no.
   function estilarBoton(id,tarea){
     if(sensores[id] == true){
       if (tarea == 1){
@@ -126,23 +144,44 @@ export default function App() {
       }
     }
   }
-  
 
-  // Función para renderizar el item
-  const renderItem = ({ item }) => (
-      <Item id={item.id} title={item.title} />
-  );
+  // Función para activar o desactivar un sensor según el caso
+  function activarDesactivarSensor(id, interruptor){
 
-  // Separador establecido
-  const separatorItem = () => {
-      return (
-          <View style={styles.separator} />
-      )
+    // Si el interruptor está a 1, activamos el sensor
+    if(interruptor == 1){
+
+      // Localizamos el sensor
+      if(id == 1){
+        console.log("Activamos acelerómetro")
+        suscripcionsetAcelerometro(
+          Accelerometer.addListener(getDataAcelerometro),
+          Accelerometer.setUpdateInterval(500)
+        );
+      }
+
+    // Si el interruptor está a 0, desactivamos el sensor
+    } else {
+
+      // Localizamos el sensor
+      if(id == 1){
+        console.log("Desactivamos acelerómetro")
+
+        suscripcionacelerometro && suscripcionacelerometro.remove();
+        suscripcionsetAcelerometro(null);
+      }
+    }
+
+    
   }
-
   
 
 
+
+  
+
+  // EEDD que almacena el estado de los sensores
+  // False = desactivado, True = activado
   const [sensores, setSensores] = useState(
     {
       1:false,
@@ -155,26 +194,7 @@ export default function App() {
     }
   )
 
-  const [suscripciones, setSuscripciones] = useState(
-    {
-      1:null,
-      2:null,
-      3:null,
-      4:null,
-      5:null,
-      6:null,
-      7:null,
-    }
-  )
-
-  const [acelerometro, setAcelerometro] = useState(false)
-  const [barometro, setBarometro] = useState(false)
-  const [giroscopio, setGiroscopio] = useState(false)
-  const [magnetometro, setMagnetometro] = useState(false)
-  const [luminosidad, setLuminosidad] = useState(false)
-  const [podometro, setPodometro] = useState(false)
-  const [gps, setGPS] = useState(false)
-
+  // EEDD que almacena las suscripciones a los sensores disponibles
   const [suscripcionacelerometro, suscripcionsetAcelerometro] = useState(null)
   const [suscripcionbarometro, suscripcionsetBarometro] = useState(null)
   const [suscripciongiroscopio, suscripcionsetGiroscopio] = useState(null)
@@ -183,6 +203,8 @@ export default function App() {
   const [suscripcionpodometro, suscripcionsetPodometro] = useState(null)
   const [suscripciongps, suscripcionsetGPS] = useState(null)
 
+
+  // Para mostrar datos por pantalla. Se puede borrar / adaptar a otro sensor para hacer pruebas
   const [{ x, y, z }, setData] = useState({
     x: 0,
     y: 0,
@@ -190,43 +212,44 @@ export default function App() {
   });
 
 
-  const [subscription, setSubscription] = useState(null);
+  // Función que se queda a la escucha del acelerómetro
+  const getDataAcelerometro = (data) => {
+    // Recogemos los datos
+    setData(data)
 
-  
+    // Los enviamos a la BBDD
+    registrarAcelerometro(data['x'], data['y'], data['z'])
+  }
 
-  const _subscribe = (id) => {
-    setSubscription(
-      Accelerometer.addListener(setData),
-      Accelerometer.setUpdateInterval(400)
-    );
-  };
-
-  const _unsubscribe = (id) => {
-    subscription && subscription.remove();
-    setSubscription(null);
-  };
-
-  // useEffect(() => {
-  //   _subscribe();
-  //   return () => _unsubscribe();
-  // }, []);
-
-
-
-
-  const _registrar = async () => {
-    console.log("REGISTRAMOS")
+  // Función para registrar los datos del acelerómetro
+  const registrarAcelerometro = async(x, y, z) => {
+    console.log("REGISTRAMOS acelerometro")
     try {
-      const docRef = await addDoc(collection(db, "users"), {
-        first: "Ada222",
-        last: "Lovelace",
-        born: 1815
+      const docRef = await addDoc(collection(db, "Acelerometro"), {
+        x: x,
+        y: y,
+        z: z
       });
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
   }
+
+
+  // const _registrar = async () => {
+  //   console.log("REGISTRAMOS")
+  //   try {
+  //     const docRef = await addDoc(collection(db, "users"), {
+  //       first: "Ada222",
+  //       last: "Lovelace",
+  //       born: 1815
+  //     });
+  //     console.log("Document written with ID: ", docRef.id);
+  //   } catch (e) {
+  //     console.error("Error adding document: ", e);
+  //   }
+  // }
 
 
   return (
@@ -245,12 +268,12 @@ export default function App() {
       <Text>x: {x}</Text>
       <Text>y: {y}</Text>
       <Text>z: {z}</Text>
-      <View>
+      {/* <View>
 
         <TouchableOpacity onPress={_registrar} >
           <Text>Registrar</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 
