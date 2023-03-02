@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Accelerometer } from 'expo-sensors';
+import { Accelerometer, Barometer } from 'expo-sensors';
 
 import { FlatList } from "react-native-gesture-handler";
 
@@ -158,6 +158,12 @@ export default function App() {
           Accelerometer.addListener(getDataAcelerometro),
           Accelerometer.setUpdateInterval(500)
         );
+      }else if (id==2){
+          console.log("Activamos barómetro")
+          suscripcionsetBarometro(
+            Barometer.addListener(getDataBarometro),
+            Barometer.setUpdateInterval(100)
+          );
       }
 
     // Si el interruptor está a 0, desactivamos el sensor
@@ -169,6 +175,10 @@ export default function App() {
 
         suscripcionacelerometro && suscripcionacelerometro.remove();
         suscripcionsetAcelerometro(null);
+      }else if (id==2){
+           console.log("Desactivamos barometro")
+           suscripcionbarometro && suscripcionbarometro.remove();
+           suscripcionsetBarometro(null);
       }
     }
 
@@ -236,6 +246,36 @@ export default function App() {
     }
   }
 
+//Barometro
+// Para mostrar datos por pantalla. Se puede borrar / adaptar a otro sensor para hacer pruebas
+  const [{ pressure, relativeAltitude }, setDataBarometro] = useState({ pressure: 0, relativeAltitude: 0 });
+
+
+  // Función que se queda a la escucha del acelerómetro
+  const getDataBarometro = (data) => {
+    // Recogemos los datos
+    setDataBarometro(data)
+
+    console.log(data)
+
+    // Los enviamos a la BBDD
+    registrarBarometro(data['pressure'], data['relativeAltitude'])
+  }
+
+  // Función para registrar los datos del acelerómetro
+  const registrarBarometro = async(pressure, relativeAltitude) => {
+    console.log("REGISTRAMOS barometro")
+    try {
+      const docRef = await addDoc(collection(db, "Barometro"), {
+        pressure: pressure,
+        relativeAltitude: relativeAltitude,
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
 
   // const _registrar = async () => {
   //   console.log("REGISTRAMOS")
@@ -263,6 +303,9 @@ export default function App() {
         ItemSeparatorComponent={separatorItem}
       />
 
+      <Text>Barometer: </Text>
+            <Text>pressure: {pressure} hp</Text>
+            <Text>relativeAltitude: {relativeAltitude}</Text>
 
       <Text>Accelerometer: (in gs where 1g = 9.81 m/s^2)</Text>
       <Text>x: {x}</Text>
