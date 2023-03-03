@@ -10,7 +10,7 @@ import { FlatList } from "react-native-gesture-handler";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-import { collection, addDoc } from "firebase/firestore"; 
+import { collection, addDoc, setDoc, doc } from "firebase/firestore"; 
 
 // TODO: Add SDKs for Firebase products that you want to use
 
@@ -162,7 +162,7 @@ export default function App() {
           console.log("Activamos barómetro")
           suscripcionsetBarometro(
             Barometer.addListener(getDataBarometro),
-            Barometer.setUpdateInterval(100)
+            Barometer.setUpdateInterval(30000)
           );
       }
 
@@ -234,12 +234,17 @@ export default function App() {
   // Función para registrar los datos del acelerómetro
   const registrarAcelerometro = async(x, y, z) => {
     console.log("REGISTRAMOS acelerometro")
+
+    var fechaActual = new Date()
+    console.log(fechaActual)
     try {
-      const docRef = await addDoc(collection(db, "Acelerometro"), {
+
+      const docRef = await setDoc(doc(db, "Acelerometro", fechaActual.toString()), {
         x: x,
         y: y,
         z: z
       });
+
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
@@ -268,7 +273,7 @@ export default function App() {
     try {
       const docRef = await addDoc(collection(db, "Barometro"), {
         pressure: pressure,
-        relativeAltitude: relativeAltitude,
+        
       });
       console.log("Document written with ID: ", docRef.id);
     } catch (e) {
