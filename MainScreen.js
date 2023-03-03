@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Accelerometer, Barometer } from 'expo-sensors';
+import { Accelerometer, Barometer, Gyroscope, DeviceMotion, LightSensor, Magnetometer, Pedometer } from 'expo-sensors';
 
 import { FlatList } from "react-native-gesture-handler";
 
@@ -59,9 +59,9 @@ export default function App() {
     { id: 1, title: 'Acelerómetro' },
     { id: 2, title: 'Barómetro' },
     { id: 3, title: 'Giroscopio' },
-    // { id: 4, title: 'Luminosidad' },
-    // { id: 5, title: 'Magnetómetro' },
-    // { id: 6, title: 'Podómetro' },
+    { id: 4, title: 'Luminosidad' },
+    { id: 5, title: 'Magnetómetro' },
+    { id: 6, title: 'Podómetro' },
     // { id: 7, title: 'GPS' },
     
     
@@ -164,7 +164,33 @@ export default function App() {
             Barometer.addListener(getDataBarometro),
             Barometer.setUpdateInterval(30000)
           );
-      }
+      } else if (id == 3){
+          console.log("Activamos giroscopio")
+          suscripcionsetGiroscopio(
+            Gyroscope.addListener(getDataGiroscopio),
+            Gyroscope.setUpdateInterval(500)
+          );
+          
+      } else if (id == 4){
+        console.log("Activamos sensor de luz")
+        suscripcionsetLuminosidad(
+          LightSensor.addListener(getDataIlluminance),
+          LightSensor.setUpdateInterval(1000)
+        );
+      }else if(id == 5){
+        console.log("Activamos magnetómetro")
+        suscripcionsetMagnetometro(
+          Magnetometer.addListener(getDataMagnetometro),
+          Magnetometer.setUpdateInterval(500)
+        );
+      }// else if(id == 6){
+      //   console.log("Activamos podómetro")
+      //   suscripcionsetPodometro(
+      //     Pedometer.addListener(getDataPodometro),
+      //     Pedometer.setUpdateInterval(500)
+      //   );
+      // }
+
 
     // Si el interruptor está a 0, desactivamos el sensor
     } else {
@@ -172,14 +198,29 @@ export default function App() {
       // Localizamos el sensor
       if(id == 1){
         console.log("Desactivamos acelerómetro")
-
         suscripcionacelerometro && suscripcionacelerometro.remove();
         suscripcionsetAcelerometro(null);
       }else if (id==2){
-           console.log("Desactivamos barometro")
-           suscripcionbarometro && suscripcionbarometro.remove();
-           suscripcionsetBarometro(null);
-      }
+        console.log("Desactivamos barometro")
+        suscripcionbarometro && suscripcionbarometro.remove();
+        suscripcionsetBarometro(null);
+      } else if (id == 3){
+        console.log("Desactivamos giroscopio")
+        suscripciongiroscopio && suscripciongiroscopio.remove();
+        suscripcionsetGiroscopio(null);
+      } else if (id == 4){
+        console.log("Desactivamos sensor de luz")
+        suscripcionluminosidad && suscripcionluminosidad.remove();
+        suscripcionsetLuminosidad(null);
+      } else if (id == 5){
+        console.log("Desactivamos magnetómetro")
+        suscripcionmagnetometro && suscripcionmagnetometro.remove();
+        suscripcionsetMagnetometro(null);
+      } //else if (id == 6){
+      //   console.log("Desactivamos magnetómetro")
+      //   suscripcionpodometro && suscripcionpodometro.remove();
+      //   suscripcionsetPodometro(null);
+      // }
     }
 
     
@@ -214,18 +255,8 @@ export default function App() {
   const [suscripciongps, suscripcionsetGPS] = useState(null)
 
 
-  // Para mostrar datos por pantalla. Se puede borrar / adaptar a otro sensor para hacer pruebas
-  const [{ x, y, z }, setData] = useState({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
-
-
   // Función que se queda a la escucha del acelerómetro
   const getDataAcelerometro = (data) => {
-    // Recogemos los datos
-    setData(data)
 
     // Los enviamos a la BBDD
     registrarAcelerometro(data['x'], data['y'], data['z'])
@@ -234,20 +265,9 @@ export default function App() {
   // Función para registrar los datos del acelerómetro
   const registrarAcelerometro = async(x, y, z) => {
     console.log("REGISTRAMOS acelerometro")
-
-    var date = new Date().getDate(); //Current Date
-    var month = new Date().getMonth() + 1; //Current Month
-    var year = new Date().getFullYear(); //Current Year
-    var hours = new Date().getHours(); //Current Hours
-    var min = new Date().getMinutes(); //Current Minutes
-    var sec = new Date().getSeconds(); //Current Seconds
-    var milisec = new Date().getMilliseconds(); //Current Miliseconds
-    var fechaActual = date + '-' + month + '-' + year + ' ' + hours + ':' + min + ':' + sec + ':' + milisec;
-    console.log(fechaActual)
-    console.log(typeof(fechaActual))
     try {
 
-      const docRef = await setDoc(doc(db, "Acelerometro", fechaActual), {
+      const docRef = await setDoc(doc(db, "Acelerometro", getFecha()), {
         x: x,
         y: y,
         z: z
@@ -258,6 +278,36 @@ export default function App() {
       console.error("Error adding document: ", e);
     }
   }
+
+// Función que se queda a la escucha del acelerómetro
+const getDataGiroscopio = (data) => {
+  // Recogemos los datos
+  setData(data)
+
+  // Los enviamos a la BBDD
+  registrarGiroscopio(data['x'], data['y'], data['z'])
+}
+
+// Función para registrar los datos del acelerómetro
+const registrarGiroscopio = async(x, y, z) => {
+  console.log("REGISTRAMOS giroscopio")
+  try {
+
+    const docRef = await setDoc(doc(db, "Giroscopio", getFecha()), {
+      x: x,
+      y: y,
+      z: z
+    });
+
+    //console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+
+
+
 
 //Barometro
 // Para mostrar datos por pantalla. Se puede borrar / adaptar a otro sensor para hacer pruebas
@@ -278,19 +328,10 @@ export default function App() {
   // Función para registrar los datos del acelerómetro
   const registrarBarometro = async(pressure, relativeAltitude) => {
     console.log("REGISTRAMOS barometro")
-    var date = new Date().getDate(); //Current Date
-    var month = new Date().getMonth() + 1; //Current Month
-    var year = new Date().getFullYear(); //Current Year
-    var hours = new Date().getHours(); //Current Hours
-    var min = new Date().getMinutes(); //Current Minutes
-    var sec = new Date().getSeconds(); //Current Seconds
-    var milisec = new Date().getMilliseconds(); //Current Miliseconds
-    var fechaActual = date + '-' + month + '-' + year + ' ' + hours + ':' + min + ':' + sec + ':' + milisec;
-    console.log(fechaActual)
-    console.log(typeof(fechaActual))
+
     try {
 
-      const docRef = await setDoc(doc(db, "Barometro", fechaActual), {
+      const docRef = await setDoc(doc(db, "Barometro", getFecha()), {
         pressure: pressure
       });
 
@@ -301,19 +342,99 @@ export default function App() {
   }
 
 
-  // const _registrar = async () => {
-  //   console.log("REGISTRAMOS")
-  //   try {
-  //     const docRef = await addDoc(collection(db, "users"), {
-  //       first: "Ada222",
-  //       last: "Lovelace",
-  //       born: 1815
-  //     });
-  //     console.log("Document written with ID: ", docRef.id);
-  //   } catch (e) {
-  //     console.error("Error adding document: ", e);
-  //   }
-  // }
+
+  const [{ illuminance }, setDataIlluminance] = useState({ illuminance : 0 });
+
+
+  // Función que se queda a la escucha del acelerómetro
+  const getDataIlluminance = (data) => {
+    // Recogemos los datos
+    setDataIlluminance(data)
+
+    console.log(data)
+
+    // Los enviamos a la BBDD
+    registrarIlluminance(data['illuminance'])
+  }
+
+  // Función para registrar los datos del acelerómetro
+  const registrarIlluminance = async(illuminance) => {
+    console.log("REGISTRAMOS illuminance")
+
+    try {
+
+      const docRef = await setDoc(doc(db, "Luminosidad", getFecha()), {
+        illuminance: illuminance
+      });
+
+      //console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
+  // Función que se queda a la escucha del acelerómetro
+  const getDataMagnetometro = (data) => {
+
+    // Los enviamos a la BBDD
+    registrarMagnetometro(data['x'], data['y'], data['z'])
+  }
+
+  // Función para registrar los datos del acelerómetro
+  const registrarMagnetometro = async(x, y, z) => {
+    console.log("REGISTRAMOS magnetometro")
+    console.log(x,y,z)
+    try {
+
+      const docRef = await setDoc(doc(db, "Magnetometro", getFecha()), {
+        x: x,
+        y: y,
+        z: z
+      });
+
+      //console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
+  const getDataPodometro = (data) => {
+
+    // Los enviamos a la BBDD
+    registrarPodometro(data['pastStepCount'], data['currentStepCount'])
+  }
+
+  // Función para registrar los datos del acelerómetro
+  const registrarPodometro = async(pastStepCount, currentStepCount) => {
+    console.log("REGISTRAMOS podometro")
+    console.log(pastStepCount, currentStepCount)
+
+    try {
+
+      const docRef = await setDoc(doc(db, "Podometro", getFecha()), {
+        pastStepCount: pastStepCount,
+        currentStepCount: currentStepCount
+      });
+
+      //console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
+
+  const getFecha = () => {
+    var date = new Date().getDate(); //Current Date
+    var month = new Date().getMonth() + 1; //Current Month
+    var year = new Date().getFullYear(); //Current Year
+    var hours = new Date().getHours(); //Current Hours
+    var min = new Date().getMinutes(); //Current Minutes
+    var sec = new Date().getSeconds(); //Current Seconds
+    var milisec = new Date().getMilliseconds(); //Current Miliseconds
+    var fechaActual = date + '-' + month + '-' + year + ' ' + hours + ':' + min + ':' + sec + ':' + milisec;
+
+    return fechaActual
+  }
 
 
   return (
@@ -331,10 +452,8 @@ export default function App() {
             <Text>pressure: {pressure} hp</Text>
             <Text>relativeAltitude: {relativeAltitude}</Text>
 
-      <Text>Accelerometer: (in gs where 1g = 9.81 m/s^2)</Text>
-      <Text>x: {x}</Text>
-      <Text>y: {y}</Text>
-      <Text>z: {z}</Text>
+
+      <Text>Illuminance: {illuminance}</Text>
       {/* <View>
 
         <TouchableOpacity onPress={_registrar} >
