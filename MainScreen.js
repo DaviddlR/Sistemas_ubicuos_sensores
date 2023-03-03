@@ -235,17 +235,25 @@ export default function App() {
   const registrarAcelerometro = async(x, y, z) => {
     console.log("REGISTRAMOS acelerometro")
 
-    var fechaActual = new Date()
+    var date = new Date().getDate(); //Current Date
+    var month = new Date().getMonth() + 1; //Current Month
+    var year = new Date().getFullYear(); //Current Year
+    var hours = new Date().getHours(); //Current Hours
+    var min = new Date().getMinutes(); //Current Minutes
+    var sec = new Date().getSeconds(); //Current Seconds
+    var milisec = new Date().getMilliseconds(); //Current Miliseconds
+    var fechaActual = date + '-' + month + '-' + year + ' ' + hours + ':' + min + ':' + sec + ':' + milisec;
     console.log(fechaActual)
+    console.log(typeof(fechaActual))
     try {
 
-      const docRef = await setDoc(doc(db, "Acelerometro", fechaActual.toString()), {
+      const docRef = await setDoc(doc(db, "Acelerometro", fechaActual), {
         x: x,
         y: y,
         z: z
       });
 
-      console.log("Document written with ID: ", docRef.id);
+      //console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -270,12 +278,23 @@ export default function App() {
   // Función para registrar los datos del acelerómetro
   const registrarBarometro = async(pressure, relativeAltitude) => {
     console.log("REGISTRAMOS barometro")
+    var date = new Date().getDate(); //Current Date
+    var month = new Date().getMonth() + 1; //Current Month
+    var year = new Date().getFullYear(); //Current Year
+    var hours = new Date().getHours(); //Current Hours
+    var min = new Date().getMinutes(); //Current Minutes
+    var sec = new Date().getSeconds(); //Current Seconds
+    var milisec = new Date().getMilliseconds(); //Current Miliseconds
+    var fechaActual = date + '-' + month + '-' + year + ' ' + hours + ':' + min + ':' + sec + ':' + milisec;
+    console.log(fechaActual)
+    console.log(typeof(fechaActual))
     try {
-      const docRef = await addDoc(collection(db, "Barometro"), {
-        pressure: pressure,
-        
+
+      const docRef = await setDoc(doc(db, "Barometro", fechaActual), {
+        pressure: pressure
       });
-      console.log("Document written with ID: ", docRef.id);
+
+      //console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
