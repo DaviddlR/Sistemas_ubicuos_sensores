@@ -45,11 +45,7 @@ const app = initializeApp(firebaseConfig);
 // Initialize Cloud Firestore and get a reference to the service
 const db = getFirestore(app);
 
-function activarSensor(id){
-  console.log(id)
 
-  
-}
 
 
 export default function App() {
@@ -62,7 +58,7 @@ export default function App() {
     { id: 4, title: 'Luminosidad' },
     { id: 5, title: 'Magnetómetro' },
     { id: 6, title: 'Podómetro' },
-    // { id: 7, title: 'GPS' },
+    { id: 7, title: 'GPS' },
     
     
   ];
@@ -190,6 +186,14 @@ export default function App() {
       //     Pedometer.setUpdateInterval(500)
       //   );
       // }
+      else if (id == 7){
+        console.log("Activamos GPS")
+
+        
+
+
+
+      }
 
 
     // Si el interruptor está a 0, desactivamos el sensor
@@ -252,7 +256,6 @@ export default function App() {
   const [suscripcionmagnetometro, suscripcionsetMagnetometro] = useState(null)
   const [suscripcionluminosidad, suscripcionsetLuminosidad] = useState(null)
   const [suscripcionpodometro, suscripcionsetPodometro] = useState(null)
-  const [suscripciongps, suscripcionsetGPS] = useState(null)
 
 
   // Función que se queda a la escucha del acelerómetro
