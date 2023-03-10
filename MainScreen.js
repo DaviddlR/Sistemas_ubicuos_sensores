@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Accelerometer, Barometer, Gyroscope, DeviceMotion, LightSensor, Magnetometer, Pedometer } from 'expo-sensors';
+//import * as TaskManager from "expo-task-manager"
+import * as Location from "expo-location"
 
 import { FlatList } from "react-native-gesture-handler";
 
@@ -46,9 +48,17 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-
+const LOCATION_TASK_NAME = "LOCATION_TASK_NAME"
+let foregroundSubscription = null
 
 export default function App() {
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const foreground = await Location.requestForegroundPermissionsAsync()
+    }
+    requestPermissions()
+  }, [])
 
   // Datos para la listView (nombres de los sensores)
   const dataSource = [
@@ -62,7 +72,7 @@ export default function App() {
     
     
   ];
-  
+
 
   // Elementos de la listview
   // Función que representa el item de la lista
@@ -188,11 +198,7 @@ export default function App() {
       // }
       else if (id == 7){
         console.log("Activamos GPS")
-
-        
-
-
-
+        startForegroundUpdate();
       }
 
 
@@ -225,6 +231,9 @@ export default function App() {
       //   suscripcionpodometro && suscripcionpodometro.remove();
       //   suscripcionsetPodometro(null);
       // }
+      else if(id == 7){
+        stopForegroundUpdate();
+      }
     }
 
     
@@ -425,6 +434,38 @@ const registrarGiroscopio = async(x, y, z) => {
     }
   }
 
+
+  const [position, setPosition] = useState(null)
+  // Start location tracking in foreground
+  const startForegroundUpdate = async () => {
+    // Check if foreground permission is granted
+    const { granted } = await Location.getForegroundPermissionsAsync()
+    if (!granted) {
+      console.log("location tracking denied")
+      return
+    }
+
+    // Make sure that foreground location tracking is not running
+    foregroundSubscription?.remove()
+
+    // Start watching position in real-time
+    foregroundSubscription = await Location.watchPositionAsync(
+      {
+        // For better logs, we set the accuracy to the most sensitive option
+        accuracy: Location.Accuracy.BestForNavigation,
+      },
+      location => {
+        setPosition(location.coords)
+        console.log(location.coords)
+      }
+    )
+  }
+
+  // Stop location tracking in foreground
+  const stopForegroundUpdate = () => {
+    foregroundSubscription?.remove()
+    setPosition(null)
+  }
 
   const getFecha = () => {
     var date = new Date().getDate(); //Current Date
