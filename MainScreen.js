@@ -457,6 +457,7 @@ const registrarGiroscopio = async(x, y, z) => {
       location => {
         setPosition(location.coords)
         console.log(location.coords)
+        registrarPosition(location.coords.altitude, location.coords.longitude, location.coords.latitude)
       }
     )
   }
@@ -465,6 +466,24 @@ const registrarGiroscopio = async(x, y, z) => {
   const stopForegroundUpdate = () => {
     foregroundSubscription?.remove()
     setPosition(null)
+  }
+
+  // Función para registrar los datos del acelerómetro
+  const registrarPosition = async(altitude, longitude, latitude) => {
+    console.log("REGISTRAMOS posicion")
+
+    try {
+
+      const docRef = await setDoc(doc(db, "GPS", getFecha()), {
+        altitude: altitude,
+        longitude: longitude,
+        latitude: latitude
+      });
+
+      //console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   }
 
   const getFecha = () => {
