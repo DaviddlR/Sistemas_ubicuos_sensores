@@ -1,85 +1,130 @@
-import React, { useState, useEffect } from 'react';
-import { Platform, Text, View, StyleSheet, Button } from 'react-native';
+import React, { useEffect, useState } from "react"
+import { StyleSheet, Text, View, Button } from "react-native"
+import * as TaskManager from "expo-task-manager"
+import * as Location from "expo-location"
 
-import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
+const LOCATION_TASK_NAME = "LOCATION_TASK_NAME"
+let foregroundSubscription = null
 
-const LOCATION_TRACKING = 'location-tracking';
+// Define the background task for location tracking
+TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
+  if (error) {
+    console.error(error)
+    return
+  }
+  if (data) {
+    // Extract location coordinates from data
+    const { locations } = data
+    const location = locations[0]
+    if (location) {
+      console.log("Location in background", location.coords)
+    }
+  }
+})
 
 export default function App() {
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  // Define position state: {latitude: number, longitude: number}
+  const [position, setPosition] = useState(null)
 
-
-  const startLocationTracking = async () => {
-    await Location.startLocationUpdatesAsync(LOCATION_TRACKING, {
-      accuracy: Location.Accuracy.Highest,
-      timeInterval: 5000,
-      distanceInterval: 0,
-    });
-    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-      LOCATION_TRACKING
-    );
-    console.log('tracking started?', hasStarted);
-  };
-
-
-
+  // Request permissions right after starting the app
   useEffect(() => {
-    (async () => {
+    const requestPermissions = async () => {
+      const foreground = await Location.requestForegroundPermissionsAsync()
+    }
+    requestPermissions()
+  }, [])
 
-    console.log("Pide permisos")
-      
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
+
+  
+  // Start location tracking in foreground
+  const startForegroundUpdate = async () => {
+    // Check if foreground permission is granted
+    const { granted } = await Location.getForegroundPermissionsAsync()
+    if (!granted) {
+      console.log("location tracking denied")
+      return
+    }
+
+    // Make sure that foreground location tracking is not running
+    foregroundSubscription?.remove()
+
+    // Start watching position in real-time
+    foregroundSubscription = await Location.watchPositionAsync(
+      {
+        // For better logs, we set the accuracy to the most sensitive option
+        accuracy: Location.Accuracy.BestForNavigation,
+      },
+      location => {
+        setPosition(location.coords)
       }
+    )
+  }
 
-    console.log("hace cosas")
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
-  }, []);
-
-  let text = 'Waiting..';
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
+  // Stop location tracking in foreground
+  const stopForegroundUpdate = () => {
+    foregroundSubscription?.remove()
+    setPosition(null)
   }
 
   return (
     <View style={styles.container}>
-      <Button title="Start tracking" onPress={startLocationTracking} />
+      <Text>Longitude: {position?.longitude}</Text>
+      <Text>Latitude: {position?.latitude}</Text>
+      <View style={styles.separator} />
+      <Button
+        onPress={startForegroundUpdate}
+        title="Start in foreground"
+        color="green"
+      />
+      <View style={styles.separator} />
+      <Button
+        onPress={stopForegroundUpdate}
+        title="Stop in foreground"
+        color="red"
+      />
+      
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-  });
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  button: {
+    marginTop: 15,
+  },
+  separator: {
+    marginVertical: 8,
+  },
+})
 
-TaskManager.defineTask(LOCATION_TRACKING, async ({ data, error }) => {
-    if (error) {
-      console.log('LOCATION_TRACKING task ERROR:', error);
-      return;
-    }
-    if (data) {
-      const { locations } = data;
-      let lat = locations[0].coords.latitude;
-      let long = locations[0].coords.longitude;
-  
-      console.log(
-        `${new Date(Date.now()).toLocaleString()}: ${lat},${long}`
-      );
-    }
-  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
