@@ -278,8 +278,9 @@ export default function App() {
   const registrarAcelerometro = async(x, y, z) => {
     console.log("REGISTRAMOS acelerometro")
     try {
-
-      const docRef = await setDoc(doc(db, "Acelerometro", getFecha()), {
+      const date = new Date().toISOString()
+      const docRef = await setDoc(doc(db, "Acelerometro456", getFecha()), {
+        timestamp: date,
         x: x,
         y: y,
         z: z
@@ -293,8 +294,6 @@ export default function App() {
 
 // Función que se queda a la escucha del acelerómetro
 const getDataGiroscopio = (data) => {
-  // Recogemos los datos
-  setData(data)
 
   // Los enviamos a la BBDD
   registrarGiroscopio(data['x'], data['y'], data['z'])
@@ -304,8 +303,9 @@ const getDataGiroscopio = (data) => {
 const registrarGiroscopio = async(x, y, z) => {
   console.log("REGISTRAMOS giroscopio")
   try {
-
-    const docRef = await setDoc(doc(db, "Giroscopio", getFecha()), {
+    const date = new Date().toISOString()
+    const docRef = await setDoc(doc(db, "Giroscopio456", getFecha()), {
+      timestamp: date,
       x: x,
       y: y,
       z: z
@@ -342,8 +342,9 @@ const registrarGiroscopio = async(x, y, z) => {
     console.log("REGISTRAMOS barometro")
 
     try {
-
+      
       const docRef = await setDoc(doc(db, "Barometro", getFecha()), {
+        
         pressure: pressure
       });
 
@@ -374,8 +375,9 @@ const registrarGiroscopio = async(x, y, z) => {
     console.log("REGISTRAMOS illuminance")
 
     try {
-
+      const date = new Date().toISOString()
       const docRef = await setDoc(doc(db, "Luminosidad", getFecha()), {
+        timestamp: date,
         illuminance: illuminance
       });
 
@@ -395,13 +397,18 @@ const registrarGiroscopio = async(x, y, z) => {
   // Función para registrar los datos del acelerómetro
   const registrarMagnetometro = async(x, y, z) => {
     console.log("REGISTRAMOS magnetometro")
-    console.log(x,y,z)
     try {
+      const date = new Date().toISOString()
 
+      // Campo magnético total = Raiz de x^2 + y^2 + z^2
+      var total = Math.sqrt(Math.pow(x,2) + Math.pow(x,2) + Math.pow(x,2))
+      console.log(total)
       const docRef = await setDoc(doc(db, "Magnetometro", getFecha()), {
+        timestamp: date,
         x: x,
         y: y,
-        z: z
+        z: z,
+        total: total
       });
 
       //console.log("Document written with ID: ", docRef.id);
