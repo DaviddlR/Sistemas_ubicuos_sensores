@@ -475,13 +475,13 @@ const registrarGiroscopio = async(x, y, z) => {
     setPosition(null)
   }
 
-  // Función para registrar los datos del acelerómetro
+  // Función para registrar los datos del GPS
   const registrarPosition = async(altitude, longitude, latitude) => {
     console.log("REGISTRAMOS posicion")
 
     try {
 
-      const docRef = await setDoc(doc(db, "GPS", getFecha()), {
+      const docRef = await setDoc(doc(db, "GPS2", getFecha()), {
         altitude: altitude,
         longitude: longitude,
         latitude: latitude
