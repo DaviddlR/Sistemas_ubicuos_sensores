@@ -67,7 +67,6 @@ export default function App() {
     { id: 3, title: 'Giroscopio' },
     { id: 4, title: 'Luminosidad' },
     { id: 5, title: 'Magnetómetro' },
-    { id: 6, title: 'Podómetro' },
     { id: 7, title: 'GPS' },
     
     
@@ -189,14 +188,7 @@ export default function App() {
           Magnetometer.addListener(getDataMagnetometro),
           Magnetometer.setUpdateInterval(500)
         );
-      }// else if(id == 6){
-      //   console.log("Activamos podómetro")
-      //   suscripcionsetPodometro(
-      //     Pedometer.addListener(getDataPodometro),
-      //     Pedometer.setUpdateInterval(500)
-      //   );
-      // }
-      else if (id == 7){
+      } else if (id == 7){
         console.log("Activamos GPS")
         startForegroundUpdate();
       }
@@ -226,12 +218,7 @@ export default function App() {
         console.log("Desactivamos magnetómetro")
         suscripcionmagnetometro && suscripcionmagnetometro.remove();
         suscripcionsetMagnetometro(null);
-      } //else if (id == 6){
-      //   console.log("Desactivamos magnetómetro")
-      //   suscripcionpodometro && suscripcionpodometro.remove();
-      //   suscripcionsetPodometro(null);
-      // }
-      else if(id == 7){
+      } else if(id == 7){
         stopForegroundUpdate();
       }
     }
@@ -253,7 +240,6 @@ export default function App() {
       3:false,
       4:false,
       5:false,
-      6:false,
       7:false,
     }
   )
@@ -264,7 +250,6 @@ export default function App() {
   const [suscripciongiroscopio, suscripcionsetGiroscopio] = useState(null)
   const [suscripcionmagnetometro, suscripcionsetMagnetometro] = useState(null)
   const [suscripcionluminosidad, suscripcionsetLuminosidad] = useState(null)
-  const [suscripcionpodometro, suscripcionsetPodometro] = useState(null)
 
 
   // Función que se queda a la escucha del acelerómetro
@@ -417,31 +402,6 @@ const registrarGiroscopio = async(x, y, z) => {
     }
   }
 
-  const getDataPodometro = (data) => {
-
-    // Los enviamos a la BBDD
-    registrarPodometro(data['pastStepCount'], data['currentStepCount'])
-  }
-
-  // Función para registrar los datos del acelerómetro
-  const registrarPodometro = async(pastStepCount, currentStepCount) => {
-    console.log("REGISTRAMOS podometro")
-    console.log(pastStepCount, currentStepCount)
-
-    try {
-
-      const docRef = await setDoc(doc(db, "Podometro", getFecha()), {
-        pastStepCount: pastStepCount,
-        currentStepCount: currentStepCount
-      });
-
-      //console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  }
-
-
   const [position, setPosition] = useState(null)
   // Start location tracking in foreground
   const startForegroundUpdate = async () => {
@@ -481,7 +441,7 @@ const registrarGiroscopio = async(x, y, z) => {
 
     try {
 
-      const docRef = await setDoc(doc(db, "GPS2", getFecha()), {
+      const docRef = await setDoc(doc(db, "GPS6", getFecha()), {
         altitude: altitude,
         longitude: longitude,
         latitude: latitude
@@ -517,19 +477,6 @@ const registrarGiroscopio = async(x, y, z) => {
         keyExtractor={item => item.id}
         ItemSeparatorComponent={separatorItem}
       />
-
-      <Text>Barometer: </Text>
-            <Text>pressure: {pressure} hp</Text>
-            <Text>relativeAltitude: {relativeAltitude}</Text>
-
-
-      <Text>Illuminance: {illuminance}</Text>
-      {/* <View>
-
-        <TouchableOpacity onPress={_registrar} >
-          <Text>Registrar</Text>
-        </TouchableOpacity>
-      </View> */}
     </View>
   );
 

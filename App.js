@@ -14,7 +14,7 @@ import {
   Button,
  } from 'react-native';
 
-import MainScreen from './MainScreen'
+import MainScreen from './MainScreen.js'
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
