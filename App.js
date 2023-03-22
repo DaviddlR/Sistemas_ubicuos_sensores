@@ -57,7 +57,7 @@ const Stack = createStackNavigator();
                 name="MainScreen"
                 component={MainScreen}
                 options={{
-                  headerTitle:"Main Screen",
+                  headerTitle:"Sensores disponibles",
                 }}
               />
 
